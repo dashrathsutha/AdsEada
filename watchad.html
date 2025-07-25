@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Watch Ad - AdsEada</title>
+</head>
+<body onload="countdown()">
+  <h2>Ad ends in <span id="timer">20</span> seconds</h2>
+  <button id="btnClose" style="display:none" onclick="closeAd()">❌ Close & Claim Coins</button>
+
+  <script src="assets/firebase.js"></script>
+  <script>
+    let seconds = 20;
+    function countdown() {
+      const interval = setInterval(() => {
+        document.getElementById('timer').innerText = --seconds;
+        if (seconds < 0) {
+          clearInterval(interval);
+          document.getElementById('btnClose').style.display = 'block';
+        }
+      }, 1000);
+    }
+
+    function closeAd() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          const uid = user.uid;
+          addCoins(uid, 20);
+          window.location.href = "index.html";
+        } else {
+          alert("Login required");
+        }
+      });
+    }
+  </script>
+</body>
+</html>

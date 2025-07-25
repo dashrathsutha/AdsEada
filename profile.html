@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile - AdsEada</title>
+</head>
+<body>
+  <h2>My Profile</h2>
+  <div id="userInfo"></div>
+
+  <h3>Wallet</h3>
+  <div id="walletInfo"></div>
+
+  <h3>Withdraw</h3>
+  <button onclick="requestWithdraw()">Withdraw ₹5 (500 Coins)</button>
+
+  <h3>Withdrawal History</h3>
+  <ul id="historyList"></ul>
+
+  <h3>Send Feedback</h3>
+  <form onsubmit="sendFeedback(); return false;">
+    <textarea id="feedbackText"></textarea><br>
+    <button type="submit">Send Feedback</button>
+  </form>
+
+  <h3>About</h3>
+  <p>Created by Dasu Suthar. AdSense Earnings: ₹1,000. Profit: ₹700.</p>
+
+  <script src="assets/firebase.js"></script>
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('userInfo').innerText = "Name: " + user.displayName + ", Phone: " + user.phoneNumber;
+        const uid = user.uid;
+        const userRef = firebase.database().ref("users/" + uid);
+        userRef.on("value", snapshot => {
+          const data = snapshot.val();
+          document.getElementById('walletInfo').innerText = "Coins: " + data.coins + " (₹" + (data.coins / 100).toFixed(2) + ")";
+        });
+
+        firebase.database().ref("withdrawals/" + uid).on("value", snapshot => {
+          const historyList = document.getElementById("historyList");
+          historyList.innerHTML = "";
+          snapshot.forEach(item => {
+            const li = document.createElement("li");
+            li.innerText = item.val().date + " - ₹" + item.val().amount;
+            historyList.appendChild(li);
+          });
+        });
+      }
+    });
+
+    function sendFeedback() {
+      const text = document.getElementById('feedbackText').value;
+      alert("Feedback sent to sutharji890@gmail.com:
+" + text);
+    }
+
+    function requestWithdraw() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          const uid = user.uid;
+          const userRef = firebase.database().ref("users/" + uid);
+          userRef.once("value", snapshot => {
+            const data = snapshot.val();
+            if (data.coins >= 500) {
+              const newCoins = data.coins - 500;
+              userRef.update({ coins: newCoins });
+
+              const withdrawalRef = firebase.database().ref("withdrawals/" + uid).push();
+              withdrawalRef.set({
+                amount: 5,
+                date: new Date().toLocaleString()
+              });
+              alert("₹5 withdrawal requested.");
+            } else {
+              alert("Not enough coins.");
+            }
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

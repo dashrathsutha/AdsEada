@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AdsEada - Home</title>
+</head>
+<body>
+  <h1>Welcome to AdsEada</h1>
+  <button onclick="startAd()">Watch Ad (+20 coins)</button>
+  <script src="assets/firebase.js"></script>
+  <script>
+    function startAd() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          window.location.href = "watchad.html";
+        } else {
+          alert("Please log in first.");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
